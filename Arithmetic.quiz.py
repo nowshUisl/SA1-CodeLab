@@ -2,7 +2,8 @@
 import tkinter as tk
 import random
 
-# Colours
+# COLOURS AND FONTS
+
 BG = "#10111F"
 PANEL = "#1B1D32"
 PANEL2 = "#252842"
@@ -13,11 +14,10 @@ GREY = "#A5A8C5"
 GREEN = "#42E6A4"
 RED = "#FF5573"
 ORANGE = "#FFB454"
-
-# Fonts
 FONT = "Segoe UI"
 
-# Quiz variables
+# QUIZ VARIABLES
+
 score = 0
 question_number = 0
 total_questions = 10
@@ -28,15 +28,18 @@ answered = False
 after_id = None
 current_screen = "menu"
 
-# Main window
+# MAIN WINDOW
+
 root = tk.Tk()
 root.title("Math Challenge")
 root.geometry("700x850")
 root.resizable(False, False)
 root.configure(bg=BG)
 
+# ROUNDED RECTANGLE FUNCTION
 
-# Draw a rounded rectangle
+# Draws a rounded rectangle using a Canvas polygon.
+# This allows the application to have rounded panels and buttons.
 def rounded_rectangle(canvas, x1, y1, x2, y2, radius, colour, tag=None):
 
     if x2 <= x1 or y2 <= y1:
@@ -68,8 +71,9 @@ def rounded_rectangle(canvas, x1, y1, x2, y2, radius, colour, tag=None):
         tags=tag
     )
 
+# ROUNDED PANEL CLASS
 
-# Rounded panel
+# Creates a reusable rounded panel for different application screens.
 class RoundedPanel(tk.Frame):
 
     def __init__(self, parent, width, height, colour=PANEL):
@@ -99,8 +103,9 @@ class RoundedPanel(tk.Frame):
             height=height - 24
         )
 
+# ROUNDED BUTTON CLASS
 
-# Rounded button
+# Creates buttons with rounded corners and hover effects.
 class RoundedButton(tk.Frame):
 
     def __init__(
@@ -141,10 +146,12 @@ class RoundedButton(tk.Frame):
 
         self.draw_button(colour)
 
+        # Connects mouse movements and clicks to the button.
         self.canvas.bind("<Enter>", self.on_enter)
         self.canvas.bind("<Leave>", self.on_leave)
         self.canvas.bind("<Button-1>", self.on_click)
 
+    # Draws the button with its current colour and text.
     def draw_button(self, colour):
 
         self.canvas.delete("all")
@@ -165,21 +172,25 @@ class RoundedButton(tk.Frame):
             font=self.font
         )
 
+    # Changes the button colour when the mouse enters.
     def on_enter(self, event):
 
         if self.enabled:
             self.draw_button(self.hover_colour)
 
+    # Restores the original colour when the mouse leaves.
     def on_leave(self, event):
 
         if self.enabled:
             self.draw_button(self.normal_colour)
 
+    # Runs the button's assigned command when clicked.
     def on_click(self, event):
 
         if self.enabled:
             self.command()
 
+    # Enables or disables the button during the quiz.
     def set_enabled(self, enabled):
 
         self.enabled = enabled
@@ -189,8 +200,9 @@ class RoundedButton(tk.Frame):
         else:
             self.draw_button("#45455A")
 
+# ROUNDED ANSWER ENTRY CLASS
 
-# Rounded answer box
+# Creates a styled answer box inside a rounded purple border.
 class RoundedEntry(tk.Frame):
 
     def __init__(self, parent):
@@ -246,8 +258,9 @@ class RoundedEntry(tk.Frame):
             lambda event: self.entry.focus_force()
         )
 
+# PROGRESS BAR
 
-# Update progress bar
+# Updates the progress bar according to the current question number.
 def update_progress():
 
     progress_bar.delete("fill")
@@ -263,8 +276,9 @@ def update_progress():
             tag="fill"
         )
 
+# SCREEN MANAGEMENT
 
-# Screen controls
+# Cancels a scheduled question change when leaving the quiz screen.
 def cancel_pending():
 
     global after_id
@@ -274,6 +288,7 @@ def cancel_pending():
         after_id = None
 
 
+# Hides all three main screens before displaying another one.
 def clear_screens():
 
     menu_frame.pack_forget()
@@ -281,6 +296,7 @@ def clear_screens():
     results_frame.pack_forget()
 
 
+# Returns the user to the difficulty selection menu.
 def display_menu():
 
     global current_screen
@@ -291,8 +307,9 @@ def display_menu():
     clear_screens()
     menu_frame.pack(pady=15)
 
+# DIFFICULTY SELECTION
 
-# Select difficulty
+# Stores the selected difficulty and starts a new quiz.
 def select_difficulty(level):
 
     global difficulty, current_screen
@@ -306,13 +323,14 @@ def select_difficulty(level):
     start_quiz()
 
 
-# Back to menu
+# Returns to the main menu using the back button.
 def go_back():
 
     display_menu()
 
+# START QUIZ
 
-# Start quiz
+# Resets the score and question counter before starting.
 def start_quiz():
 
     global score, question_number, answered
@@ -324,8 +342,10 @@ def start_quiz():
     update_score()
     next_question()
 
+# GENERATE QUESTIONS
 
-# Generate next question
+# Generates random addition or subtraction questions.
+# The number range depends on the selected difficulty.
 def next_question():
 
     global question_number, attempts
@@ -336,6 +356,7 @@ def next_question():
     if current_screen != "quiz":
         return
 
+    # Displays the results after all ten questions.
     if question_number >= total_questions:
         display_results()
         return
@@ -381,10 +402,13 @@ def next_question():
         fg=GREY
     )
 
+    # Automatically places the cursor inside the answer box.
     root.after(100, answer_entry.entry.focus_force)
 
+# CHECK ANSWER
 
-# Check answer
+# Checks the user's answer and awards points.
+# The user gets two attempts for each question.
 def check_answer():
 
     global attempts, score, answered, after_id
@@ -402,6 +426,7 @@ def check_answer():
         answer_entry.entry.focus_force()
         return
 
+    # Makes sure the answer contains a valid integer.
     try:
         user_answer = int(user_input)
 
@@ -420,6 +445,7 @@ def check_answer():
 
         answered = True
 
+        # Awards more points for answering correctly on the first attempt.
         if attempts == 1:
             score += 10
             feedback_label.config(
@@ -438,6 +464,7 @@ def check_answer():
         answer_entry.entry.config(state="disabled")
         submit_button.set_enabled(False)
 
+        # Moves to the next question after a short delay.
         after_id = root.after(1100, next_question)
 
     else:
@@ -457,6 +484,7 @@ def check_answer():
 
             answered = True
 
+            # Displays the correct answer after the second wrong attempt.
             feedback_label.config(
                 text=f"CORRECT ANSWER: {correct_answer}",
                 fg=RED
@@ -467,14 +495,16 @@ def check_answer():
 
             after_id = root.after(1600, next_question)
 
+# UPDATE SCORE
 
-# Update score
+# Updates the score display whenever points are awarded.
 def update_score():
 
     score_label.config(text=f"{score:03d}")
 
+# RESULTS SCREEN
 
-# Show results
+# Displays the final score, grade and performance message.
 def display_results():
 
     global current_screen
@@ -484,6 +514,7 @@ def display_results():
     clear_screens()
     results_frame.pack(pady=25)
 
+    # Selects a grade based on the final score.
     if score >= 90:
         grade = "S"
         message = "LEGENDARY PERFORMANCE!"
@@ -512,21 +543,22 @@ def display_results():
     result_score.config(text=f"{score} / 100")
     result_message.config(text=message)
 
+# REPLAY AND EXIT
 
-# Play again
+# Returns to the menu so the user can select another difficulty.
 def replay_quiz():
 
     display_menu()
 
 
-# Exit game
+# Closes the application and cancels any pending question changes.
 def exit_quiz():
 
     cancel_pending()
     root.destroy()
 
+# HEADER DESIGN
 
-# Header
 header = tk.Frame(root, bg=BG)
 header.pack(pady=(10, 5))
 
@@ -554,8 +586,8 @@ tk.Label(
     bg=BG
 ).pack(pady=3)
 
+# MENU SCREEN
 
-# Menu screen
 menu_frame = RoundedPanel(root, 500, 430, PANEL)
 menu_content = menu_frame.content
 
@@ -576,6 +608,7 @@ tk.Label(
 ).pack(pady=(0, 25))
 
 
+# Creates a difficulty button that starts the selected level.
 def create_difficulty_button(text, level, colour):
 
     button = RoundedButton(
@@ -595,11 +628,12 @@ create_difficulty_button("01   EASY", "Easy", "#168C83")
 create_difficulty_button("02   MODERATE", "Moderate", "#5365D9")
 create_difficulty_button("03   ADVANCED", "Advanced", "#8846D9")
 
+# QUIZ SCREEN
 
-# Quiz screen
 quiz_frame = RoundedPanel(root, 550, 650, PANEL)
 quiz_content = quiz_frame.content
 
+# Back button allows the user to leave the quiz at any time.
 back_button = RoundedButton(
     quiz_content,
     text="←  BACK TO MENU",
@@ -621,8 +655,8 @@ question_count_label = tk.Label(
 )
 question_count_label.pack(pady=5)
 
+# QUIZ PROGRESS BAR
 
-# Progress bar
 progress_bar = tk.Canvas(
     quiz_content,
     width=430,
@@ -634,8 +668,8 @@ progress_bar.pack(pady=8)
 
 rounded_rectangle(progress_bar, 0, 0, 430, 14, 7, PANEL2)
 
+# SCORE DISPLAY
 
-# Score display
 score_panel = RoundedPanel(quiz_content, 200, 85, PANEL2)
 score_panel.pack(pady=10)
 
@@ -655,6 +689,8 @@ score_label = tk.Label(
     fg=CYAN
 )
 score_label.pack()
+
+# QUESTION AND ANSWER AREA
 
 tk.Label(
     quiz_content,
@@ -684,6 +720,8 @@ tk.Label(
 answer_entry = RoundedEntry(quiz_content)
 answer_entry.pack(pady=7)
 
+# SUBMIT BUTTON AND FEEDBACK
+
 submit_button = RoundedButton(
     quiz_content,
     text="SUBMIT ANSWER  →",
@@ -696,6 +734,7 @@ submit_button = RoundedButton(
 )
 submit_button.pack(pady=8)
 
+# Displays messages when the answer is correct or incorrect.
 feedback_label = tk.Label(
     quiz_content,
     text="ENTER YOUR ANSWER BELOW",
@@ -705,8 +744,8 @@ feedback_label = tk.Label(
 )
 feedback_label.pack(pady=5)
 
+# RESULTS SCREEN
 
-# Results screen
 results_frame = RoundedPanel(root, 500, 500, PANEL)
 results_content = results_frame.content
 
@@ -745,6 +784,9 @@ result_message = tk.Label(
 )
 result_message.pack(pady=8)
 
+# RESULTS BUTTONS
+
+# Allows the user to return to the menu and play another quiz.
 replay_button = RoundedButton(
     results_content,
     text="PLAY AGAIN",
@@ -756,6 +798,7 @@ replay_button = RoundedButton(
 )
 replay_button.pack(pady=12)
 
+# Closes the application from the results screen.
 exit_button = RoundedButton(
     results_content,
     text="EXIT GAME",
@@ -768,11 +811,14 @@ exit_button = RoundedButton(
 )
 exit_button.pack(pady=5)
 
+# KEYBOARD CONTROLS
 
-# Press Enter to submit
+# Allows the user to submit an answer by pressing Enter.
 root.bind("<Return>", lambda event: check_answer())
 
-# Display menu
+# RUN APPLICATION
+
+# Displays the difficulty selection screen when the program starts.
 display_menu()
 
 root.mainloop()
